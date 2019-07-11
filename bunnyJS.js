@@ -58,7 +58,7 @@ var persp=perspective(
 
 var matrixTemp=mult(persp,view);
 
-// Converting array to workable Array
+// Converting array to workable Array because the arrays generated beforehand doesn't allow you to apply it in
 var matrix= new Array(16);
 for(var i=0;i<4;i++){
 	for(var j=0;j<4;j++){
