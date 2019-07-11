@@ -2,26 +2,9 @@
 var canvas;
 var gl;
 var color;
-
-function multiplyMatrices(m1, m2) {
-    var result = [];
-    for (var i = 0; i < m1.length; i++) {
-        result[i] = [];
-        for (var j = 0; j < m2[0].length; j++) {
-            var sum = 0;
-            for (var k = 0; k < m1[0].length; k++) {
-                sum += m1[i][k] * m2[k][j];
-            }
-            result[i][j] = sum;
-        }
-    }
-    return result;
-}
-
+canvas = document.getElementById( "gl-canvas" );
 
 window.onload = function init() {
-
-    canvas = document.getElementById( "gl-canvas" );
 
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
@@ -51,24 +34,38 @@ window.onload = function init() {
     render();
 };
 
-var vertices = get_vertices();
+// var vertices = get_vertices();
+// var vertices= [
+// 	vec3(-0.5,0.5,-0.5),
+// 	vec3(-0.5,0.5,-0.5),
+// 	vec3(-0.5,-0.5,-0.5)
+// ];
+
+var vertices= get_vertices();
 
 var view=lookAt(
-  vec3(0,0,0),
-  vec3(0,0,0),
-  vec3(0,10,0)
+	vec3(0,0,10),
+	vec3(0,0,0),
+	vec3(0,1,0)
 );
 
 var persp=perspective(
-  60,
-  1,
-  0.1,
-  1000
+	70,
+	canvas.width/canvas.height,
+	0.1,
+	1000
 );
 
-var viewProjection=mult(persp,view);
-finalTran=mult(viewProjection,vec4(vertices,1.0));
+var matrixTemp=mult(persp,view);
 
+// Converting array to workable Array
+var matrix= new Array(16);
+for(var i=0;i<4;i++){
+	for(var j=0;j<4;j++){
+		matrix[j+(i*4)]=matrixTemp[j][i];
+
+	}
+}
 
 
 
@@ -83,8 +80,12 @@ function render() {
 	//actual drawing
 	gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
 
-  // m=gl.getUniformLocation(program,"vertices");
-  // gl.uniformMatrix4fv(vertices,false,finalTran);
+	const uniformLocations={
+		matrix: gl.getUniformLocation(program, 'matrix'),
+	};
+
+
+	gl.uniformMatrix4fv(uniformLocations.matrix,false,matrix);
   gl.drawArrays( gl.TRIANGLES, 0, vertices.length );
 
   window.requestAnimationFrame(render);
