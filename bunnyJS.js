@@ -2,11 +2,9 @@
 var canvas;
 var gl;
 var color;
-
+canvas = document.getElementById( "gl-canvas" );
 
 window.onload = function init() {
-
-    canvas = document.getElementById( "gl-canvas" );
 
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
@@ -36,20 +34,39 @@ window.onload = function init() {
     render();
 };
 
+// var vertices = get_vertices();
+// var vertices= [
+// 	vec3(-0.5,0.5,-0.5),
+// 	vec3(-0.5,0.5,-0.5),
+// 	vec3(-0.5,-0.5,-0.5)
+// ];
 
-var redBoxesFirstRow = [
-	vec2 (0.2, 0.2),
-	vec2 (0.4, 0.5),
-	vec2 (0.3, 0.2),
+var vertices= get_vertices();
 
-];
+var view=lookAt(
+	vec3(0,0,10),
+	vec3(0,0,0),
+	vec3(0,1,0)
+);
 
+var persp=perspective(
+	70,
+	canvas.width/canvas.height,
+	0.1,
+	1000
+);
 
+var matrixTemp=mult(persp,view);
 
-var bunnyVertices = get_vertices();
-for(var i=0;i<bunnyVertices.length;i++){
-	bunnyVertices[i]
+// Converting array to workable Array
+var matrix= new Array(16);
+for(var i=0;i<4;i++){
+	for(var j=0;j<4;j++){
+		matrix[j+(i*4)]=matrixTemp[j][i];
+
+	}
 }
+
 
 
 //render---------------------------------------
@@ -61,14 +78,15 @@ function render() {
 
 
 	//actual drawing
-	gl.bufferData( gl.ARRAY_BUFFER, flatten(bunnyVertices), gl.STATIC_DRAW );
-  // color=vec4(1,0,0,1);
-  // colorLoc=gl.getUniformLocation(program,"color");
-  // gl.uniform4fv(colorLoc,color);
-  gl.drawArrays( gl.TRIANGLES, 0, bunnyVertices.length );
+	gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
+
+	const uniformLocations={
+		matrix: gl.getUniformLocation(program, 'matrix'),
+	};
 
 
-
+	gl.uniformMatrix4fv(uniformLocations.matrix,false,matrix);
+  gl.drawArrays( gl.TRIANGLES, 0, vertices.length );
 
   window.requestAnimationFrame(render);
 
