@@ -3,6 +3,21 @@ var canvas;
 var gl;
 var color;
 
+function multiplyMatrices(m1, m2) {
+    var result = [];
+    for (var i = 0; i < m1.length; i++) {
+        result[i] = [];
+        for (var j = 0; j < m2[0].length; j++) {
+            var sum = 0;
+            for (var k = 0; k < m1[0].length; k++) {
+                sum += m1[i][k] * m2[k][j];
+            }
+            result[i][j] = sum;
+        }
+    }
+    return result;
+}
+
 
 window.onload = function init() {
 
@@ -36,20 +51,25 @@ window.onload = function init() {
     render();
 };
 
+var vertices = get_vertices();
 
-var redBoxesFirstRow = [
-	vec2 (0.2, 0.2),
-	vec2 (0.4, 0.5),
-	vec2 (0.3, 0.2),
+var view=lookAt(
+  vec3(0,0,0),
+  vec3(0,0,0),
+  vec3(0,10,0)
+);
 
-];
+var persp=perspective(
+  60,
+  1,
+  0.1,
+  1000
+);
+
+var viewProjection=mult(persp,view);
+finalTran=mult(viewProjection,vec4(vertices,1.0));
 
 
-
-var bunnyVertices = get_vertices();
-for(var i=0;i<bunnyVertices.length;i++){
-	bunnyVertices[i]
-}
 
 
 //render---------------------------------------
@@ -61,14 +81,11 @@ function render() {
 
 
 	//actual drawing
-	gl.bufferData( gl.ARRAY_BUFFER, flatten(bunnyVertices), gl.STATIC_DRAW );
-  // color=vec4(1,0,0,1);
-  // colorLoc=gl.getUniformLocation(program,"color");
-  // gl.uniform4fv(colorLoc,color);
-  gl.drawArrays( gl.TRIANGLES, 0, bunnyVertices.length );
+	gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
 
-
-
+  // m=gl.getUniformLocation(program,"vertices");
+  // gl.uniformMatrix4fv(vertices,false,finalTran);
+  gl.drawArrays( gl.TRIANGLES, 0, vertices.length );
 
   window.requestAnimationFrame(render);
 
