@@ -8,13 +8,16 @@
 attribute vec3 vPosition;
 
 uniform mat4 matrix;
+attribute vec4 vColor;
 
-
+varying vec4 fColor;
 
 void
 main()
 {
     gl_Position = matrix * vec4(vPosition,1.0);
+
+		fColor=vColor;
 		// gl_Position = vPosition;
 }
 </script>
@@ -23,13 +26,13 @@ main()
 
 precision mediump float;
 
-uniform vec4 color;
+varying vec4 fColor;
 
 void
 main()
 {
 
-    gl_FragColor=color;
+    gl_FragColor=fColor;
 
 
 }
