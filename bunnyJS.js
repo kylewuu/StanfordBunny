@@ -1,5 +1,5 @@
 
-var canvas = document.getElementById( "gl-canvas" );;
+var canvas = document.getElementById( "gl-canvas" );
 var gl;
 var color=[
 	vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
@@ -66,7 +66,11 @@ window.onload = function init() {
     render();
 };
 
-//transformations-----------------------------------------------------------------------------------------------------
+//transformations=================================
+
+
+
+
 var view=lookAt(
 	vec3(0,0,10),
 	vec3(0,0,0),
@@ -79,23 +83,24 @@ var persp=perspective(
 	0.1,
 	1000
 );
-
-var matrixTemp=mult(persp,view);
-// var matrixTemp=scalem(1/5,1/5,1/5);
-// var matrixTemp=mat4();
-
-// Converting array to workable Array because the arrays generated beforehand doesn't allow you to apply it in
 var matrix= new Array(16);
-for(var i=0;i<4;i++){
-	for(var j=0;j<4;j++){
-		matrix[j+(i*4)]=matrixTemp[j][i];
-
-	}
-}
-
 
 //render---------------------------------------
 function render() {
+
+	//matrix calculations
+	var matrixTemp=mult(xrotationM,yrotationM);
+	matrixTemp=mult(translationM,matrixTemp);
+	matrixTemp=mult(view,matrixTemp);
+	matrixTemp=mult(persp,matrixTemp);
+
+	// Converting array to workable Array because the arrays generated beforehand doesn't allow you to apply it in
+	for(var i=0;i<4;i++){
+		for(var j=0;j<4;j++){
+			matrix[j+(i*4)]=matrixTemp[j][i];
+
+		}
+	}
 
 	// Binding the vertex buffer\
 	gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
