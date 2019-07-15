@@ -49,6 +49,7 @@ window.onload = function init() {
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,iBuffer);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(flatten(faces)),gl.STATIC_DRAW);
 
+
     // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
@@ -61,6 +62,13 @@ window.onload = function init() {
 		var vColor= gl.getAttribLocation( program, "vColor");
 		gl.vertexAttribPointer(vColor,4,gl.FLOAT,false,0,0);
 		gl.enableVertexAttribArray(vColor);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(colored));
+
+
+
+
 
 
     render();
@@ -88,6 +96,8 @@ var matrix= new Array(16);
 //render---------------------------------------
 function render() {
 
+
+
 	//matrix calculations
 	var matrixTemp=mult(xrotationM,yrotationM);
 	matrixTemp=mult(translationM,matrixTemp);
@@ -103,15 +113,24 @@ function render() {
 	}
 
 	// Binding the vertex buffer\
-	gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
-	gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(colored));
+
   gl.clear( gl.COLOR_BUFFER_BIT );
-	const uniformLocations={
-		matrix: gl.getUniformLocation(program, 'matrix'),
-	};
-	//actual drawing
-	gl.uniformMatrix4fv(uniformLocations.matrix,false,matrix);
+
+
+	// hidden surface removal currently messing up everything
+	// gl.enable(gl.DEPTH_TEST);
+  // gl.depthFunc(gl.LEQUAL);
+  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	var matrixuniformLocations= gl.getUniformLocation(program, 'matrix')
+	gl.uniformMatrix4fv(matrixuniformLocations,false,matrix);
   gl.drawElements( gl.TRIANGLES, faces.length*3,gl.UNSIGNED_SHORT,faces);
+
+	wBuffer=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER,wBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(cubeVertices),gl.STATIC_DRAW);
+	gl.drawArrays(gl.TRIANGLES,0,cubeVertices.length*3);
+
 
   window.requestAnimationFrame(render);
 
