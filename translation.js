@@ -26,6 +26,9 @@ var translationSpeed=1000;
 var rotationSpeed=10;
 var translationScale=1;
 
+var cuberotateOn=true;
+var conerotateOn=true;
+
 
 window.addEventListener("mousemove",mouseMove);
 function mouseMove(event){
@@ -181,3 +184,28 @@ function keyPress(key) {
 		translationScale=1;
 	}
 }
+
+
+//on off switch for wireframe cube rotation
+window.addEventListener("keypress", keyPress, false);
+function keyPress(key) {
+	if (key.key == "p"){
+		if(cuberotateOn==false){
+			cuberotateOn=true;
+		}
+		else if(cuberotateOn==true){
+			cuberotateOn=false;
+		}
+
+	}
+	if (key.key == "s"){
+		if(conerotateOn==false){
+			conerotateOn=true;
+		}
+		else if(conerotateOn==true){
+			conerotateOn=false;
+		}
+
+	}
+
+	}
