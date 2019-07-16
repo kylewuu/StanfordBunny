@@ -100,6 +100,18 @@ var persp=perspective(
 var matrix= new Array(16);
 var modelViewCubeTemp;
 var modelViewCube= new Array(16);
+var orbitRotationM= mat4();
+var cubeRotationAngle=0;
+
+//for rotating the cube
+setInterval(function(){
+	cubeRotationAngle+=0.01;
+	orbitRotationM[0][0]=Math.cos(cubeRotationAngle);
+	orbitRotationM[0][2]=Math.sin(cubeRotationAngle);
+	orbitRotationM[2][0]= -Math.sin(cubeRotationAngle);
+	orbitRotationM[2][2]=Math.cos(cubeRotationAngle);
+},0.5);
+
 
 //render---------------------------------------
 function render() {
@@ -108,12 +120,13 @@ function render() {
 
 	//matrix calculations
 	var matrixTemp=mult(xrotationM,yrotationM);
+	matrixTemp=mult(ztranslationM,matrixTemp);
 	matrixTemp=mult(view,matrixTemp);
 	matrixTemp=mult(persp,matrixTemp);
 	matrixTemp=mult(translationM,matrixTemp);
-	modelViewCubeTemp=mult(persp,view);
-	modelViewCubeTemp=mult(translate(0.5,0,0),modelViewCubeTemp);
-	// modelViewCubeTemp=mat4();
+	modelViewCubeTemp=mult(view,orbitRotationM);
+	modelViewCubeTemp=mult(persp,modelViewCubeTemp);
+
 
 	// Converting array to workable Array because the arrays generated beforehand doesn't allow you to apply it in
 	for(var i=0;i<4;i++){

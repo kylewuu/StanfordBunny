@@ -15,6 +15,9 @@ var xrotationHolder=mat4();
 var yrotationM=mat4();
 var yrotationHolder=mat4();
 
+var ztranslationM=mat4();
+var ztranslationHolder=mat4();
+
 var yAngle=0;
 var xAngle=0;
 var yAngleTemp=0;
@@ -116,15 +119,15 @@ window.onmouseup=function(e,obj){
 window.addEventListener("keydown", keyDown, false); //for detecting keydown
 function keyDown(key) {
   if (key.key == "ArrowUp"){ //it's easier and makes more sense to use A as left and D as right
-    translationHolder[2][3]+=translationSpeed/500;
-		translationM=translationHolder;
-		translationScale+=0.1;
+    ztranslationHolder[2][3]+=translationSpeed/500;
+		ztranslationM=ztranslationHolder;
+		translationScale+=0.001;
   }
 	if (key.key == "ArrowDown"){ //it's easier and makes more sense to use A as left and D as right
-    translationHolder[2][3]-=translationSpeed/500;
-		translationM=translationHolder;
+    ztranslationHolder[2][3]-=translationSpeed/500;
+		ztranslationM=ztranslationHolder;
 		if(translationScale>0.2){
-			translationScale-=0.1;
+			translationScale-=0.001;
 		}
 
   }
@@ -133,13 +136,13 @@ function keyDown(key) {
 
 window.onwheel=function(e){
 	if (e.wheelDelta>0){ //it's easier and makes more sense to use A as left and D as right
-    translationHolder[2][3]+=translationSpeed/500;
-		translationM=translationHolder;
+    ztranslationHolder[2][3]+=translationSpeed/5000;
+		ztranslationM=ztranslationHolder;
 		translationScale+=0.1;
   }
 	if (e.wheelDelta < 0){ //it's easier and makes more sense to use A as left and D as right
-    translationHolder[2][3]-=translationSpeed/500;
-		translationM=translationHolder;
+    ztranslationHolder[2][3]-=translationSpeed/5000;
+		ztranslationM=ztranslationHolder;
 		if(translationScale>0.2){
 			translationScale-=0.1;
 		}
@@ -166,6 +169,8 @@ function keyPress(key) {
 		xrotationHolder=mat4();
 		yrotationM=mat4();
 		yrotationHolder=mat4();
+		ztranslationM=mat4();
+		ztranslationHolder=mat4();
 
 		yAngle=0;
 		xAngle=0;
