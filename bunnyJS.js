@@ -1,6 +1,9 @@
 
 var canvas = document.getElementById( "gl-canvas" );
 var gl;
+var vPosition;
+var vPositionCube;
+
 var color=[
 	vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
 	vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
@@ -49,11 +52,10 @@ window.onload = function init() {
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,iBuffer);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(flatten(faces)),gl.STATIC_DRAW);
 
-
     // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
+    // gl.enableVertexAttribArray( vPosition );
 
 		fBuffer=gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
@@ -66,9 +68,13 @@ window.onload = function init() {
 		gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(colored));
 
+		cBuffer=gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER,cBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, flatten(cubeVertices),gl.STATIC_DRAW);
 
-
-
+		var vPositionCube = gl.getAttribLocation( program, "vPosition" );
+		gl.vertexAttribPointer( vPositionCube, 3, gl.FLOAT, false, 0, 0 );
+    // gl.enableVertexAttribArray( vPositionCube );
 
 
     render();
@@ -86,12 +92,14 @@ var view=lookAt(
 );
 
 var persp=perspective(
-	60,
+	70,
 	canvas.width/canvas.height,
 	0.1,
 	1000
 );
 var matrix= new Array(16);
+var modelViewCubeTemp;
+var modelViewCube= new Array(16);
 
 //render---------------------------------------
 function render() {
@@ -100,14 +108,24 @@ function render() {
 
 	//matrix calculations
 	var matrixTemp=mult(xrotationM,yrotationM);
-	matrixTemp=mult(translationM,matrixTemp);
 	matrixTemp=mult(view,matrixTemp);
 	matrixTemp=mult(persp,matrixTemp);
+	matrixTemp=mult(translationM,matrixTemp);
+	modelViewCubeTemp=mult(persp,view);
+	modelViewCubeTemp=mult(translate(0.5,0,0),modelViewCubeTemp);
+	// modelViewCubeTemp=mat4();
 
 	// Converting array to workable Array because the arrays generated beforehand doesn't allow you to apply it in
 	for(var i=0;i<4;i++){
 		for(var j=0;j<4;j++){
 			matrix[j+(i*4)]=matrixTemp[j][i];
+
+		}
+	}
+
+	for(var i=0;i<4;i++){
+		for(var j=0;j<4;j++){
+			modelViewCube[j+(i*4)]=modelViewCubeTemp[j][i];
 
 		}
 	}
@@ -118,18 +136,26 @@ function render() {
 
 
 	// hidden surface removal currently messing up everything
-	// gl.enable(gl.DEPTH_TEST);
-  // gl.depthFunc(gl.LEQUAL);
-  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+	// gl.bindBuffer(gl.ARRAY_BUFFER, iBuffer);
+	// gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
+	// gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(colored));
+	gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
+	// gl.enableVertexAttribArray( vPosition );
 	var matrixuniformLocations= gl.getUniformLocation(program, 'matrix')
 	gl.uniformMatrix4fv(matrixuniformLocations,false,matrix);
   gl.drawElements( gl.TRIANGLES, faces.length*3,gl.UNSIGNED_SHORT,faces);
-
-	wBuffer=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER,wBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(cubeVertices),gl.STATIC_DRAW);
-	gl.drawArrays(gl.TRIANGLES,0,cubeVertices.length*3);
+	//
+	gl.bindBuffer(gl.ARRAY_BUFFER,cBuffer);
+	gl.vertexAttribPointer( vPositionCube, 3, gl.FLOAT, false, 0, 0 );
+	gl.enableVertexAttribArray( vPositionCube );
+	var matrixuniformLocationsCube= gl.getUniformLocation(program, 'matrix')
+	gl.uniformMatrix4fv(matrixuniformLocationsCube,false,modelViewCube);
+	gl.drawArrays(gl.LINE_STRIP, 0, cubeVertices.length );
 
 
   window.requestAnimationFrame(render);

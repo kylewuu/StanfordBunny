@@ -19,7 +19,7 @@ var yAngle=0;
 var xAngle=0;
 var yAngleTemp=0;
 var xAngleTemp=0;
-var translationSpeed=100;
+var translationSpeed=1000;
 var rotationSpeed=10;
 var translationScale=1;
 
