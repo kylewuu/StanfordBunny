@@ -7,18 +7,33 @@
 
 
 attribute vec3 vPosition;
+attribute vec3 vPositionN;
+
+// varying normalI;
+
+varying vec3 vPositinon1;
 
 uniform mat4 matrix;
-uniform mat4 wireframecube;
+// uniform mat4 wireframecube;
 attribute vec4 vColor;
 
 varying vec4 fColor;
+
+uniform mat4 normalM;
+
+varying vec3 fNormal;
+
 
 void
 main()
 {
     gl_Position = matrix * vec4(vPosition,1.0);
 		// gl_Position = wireframecube * vec4(vPosition,1.0);
+    // vec4 vPositionTemp=matrix * vec4(vPosition,1.0);
+    // vPosition1=vec3(vPositionTemp)/vPositionTemp.w;
+    // normalI=vec3(normalM * vec4*vPositionN,0.0);
+    // gl_Position=
+    fNormal=(normalM*vec4(vPositionN,0.0)).xyz;
 
 		fColor=vColor;
 		// gl_Position = vPosition;
@@ -30,13 +45,14 @@ main()
 precision mediump float;
 
 varying vec4 fColor;
+varying vec3 fNormal;
+
 
 void
 main()
 {
 
-    gl_FragColor=fColor;
-
+    gl_FragColor=vec4(normalize(fNormal), 1.0);
 
 }
 </script>
@@ -80,7 +96,9 @@ main()
 <script type="text/javascript" src="translation.js"></script>
 <script type="text/javascript" src="wireframe.js"></script>
 <script type="text/javascript" src="bunny.js"></script>
+<script type="text/javascript" src="lighting.js"></script>
 <script type="text/javascript" src="bunnyJS.js"></script>
+
 
 
 </html>
