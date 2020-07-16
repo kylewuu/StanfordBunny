@@ -6,19 +6,6 @@ var vPositionCube;
 var vPositionCone;
 var vPositionN;
 
-// var color=[
-// 	vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-// 	vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
-// ];
-//
-// function getColor( color, v ){
-//   var a = [];
-//   for(i = 0; i < v; i++){
-//     a.push(color);
-//   }
-//   return a;
-// }
-
 var vertices= get_vertices();
 var faces=get_faces();
 //deincrementing faces
@@ -27,12 +14,6 @@ for( var i=0; i<faces.length;i++){
 		faces[i][j]=faces[i][j]-1;
 	}
 }
-
-// //colouring
-// var colored=getColor(color[1],faces.length);
-// for(var i=0; i<vertices.length;i++){
-// 	colored[i]=color[Math.floor(Math.random()*2)];
-// }
 
 //init
 window.onload = function init() {
@@ -59,16 +40,6 @@ window.onload = function init() {
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     // gl.enableVertexAttribArray( vPosition );
 
-		fBuffer=gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, faces.length*16, gl.STATIC_DRAW);
-
-		var vColor= gl.getAttribLocation( program, "vColor");
-		gl.vertexAttribPointer(vColor,4,gl.FLOAT,false,0,0);
-		gl.enableVertexAttribArray(vColor);
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
-
 		nBuffer=gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER,nBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER,flatten(normalVArray),gl.STATIC_DRAW);
@@ -76,6 +47,10 @@ window.onload = function init() {
 		var vPositionN=gl.getAttribLocation(program,"vPositionN");
 		gl.vertexAttribPointer(vPositionN,3,gl.FLOAT,false,0,0);
 		gl.enableVertexAttribArray(vPositionN);
+
+		fBuffer=gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, fBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, faces.length*16, gl.STATIC_DRAW);
 
 		cBuffer=gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER,cBuffer);
@@ -85,7 +60,6 @@ window.onload = function init() {
 		gl.vertexAttribPointer( vPositionCube, 3, gl.FLOAT, false, 0, 0 );
     // gl.enableVertexAttribArray( vPositionCube );
 
-
 		hBuffer=gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER,hBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, flatten(coneVertices),gl.STATIC_DRAW);
@@ -93,15 +67,10 @@ window.onload = function init() {
 		var vPositionCone = gl.getAttribLocation( program, "vPosition" );
 		gl.vertexAttribPointer( vPositionCone, 3, gl.FLOAT, false, 0, 0 );
 
-
     render();
 };
 
-//transformations=================================
-
-
-
-
+//general transformations=================================
 var view=lookAt(
 	vec3(0,0,10),
 	vec3(0,0,0),
@@ -109,23 +78,36 @@ var view=lookAt(
 );
 
 var persp=perspective(
-	65,
+	70,
 	canvas.width/canvas.height,
 	0.1,
 	1000
 );
 var matrix= new Array(16);
 var matrixTemp=mat4();
-var modelViewCubeTemp;
-var modelViewCube= new Array(16);
+var cubematrixTemp;
+var cubematrix= new Array(16);
 var orbitRotationM= mat4();
 var cubeRotationAngle=0;
 var conematrixTemp=mat4();
 var conePan=mat4();
 var coneRotationAngle=0;
 var conePanDirection=1;
-
 var conePanRange=20; //how far left and right it goes
+var nmatrixTemp=mat4();
+
+var matrixTempView=view;
+var matrixTempProj=persp;
+
+var cubeTempView=view;
+var cubeTempProj=persp;
+
+var coneTempView=view;
+var coneTempProj=persp;
+var cubereflectiveM=mat4();
+cubereflectiveM[0][0]=-1;
+cubereflectiveM[2][2]=-1;
+// console.log(cubereflectiveM);
 
 
 //for rotating the cube
@@ -141,6 +123,7 @@ setInterval(function(){
 
 
 },20);
+// console.log(translate(0,0,0));
 
 //for panning the cone
 setInterval(function(){
@@ -174,9 +157,28 @@ function render() {
 	matrixTemp=mult(persp,matrixTemp);
 	matrixTemp=mult(translationM,matrixTemp);
 
-	modelViewCubeTemp=mult(view,orbitRotationM);
-	modelViewCubeTemp=mult(persp,modelViewCubeTemp);
-	// modelViewCubeTemp=orbitRotationM;
+	// matrixTempView=mult(translationM,view)
+
+	var rotationM=mult(xrotationM,yrotationM);
+	//
+	matrixTempView=mult(translationM,view);
+	matrixTempProj=mult(translationM,persp)
+	matrixTempView=mult(ztranslationM,matrixTempView);
+	matrixTempProj=mult(ztranslationM,matrixTempProj);
+	matrixTemp=(mult(matrixTempProj,mult(matrixTempView,mult(translationM,mult(ztranslationM,rotationM)))));
+	// matrixTemp=(mult(matrixTempProj,mult(matrixTempView,mult(translationM,rotationM))));
+	cubematrixTemp=mult(view,orbitRotationM);
+	cubematrixTemp=mult(persp,cubematrixTemp);
+	cubematrixTemp=mult(cubereflectiveM,cubematrixTemp);
+
+	// cubeTempView=mult(orbitRotationM,view);
+	// cubeTempProj=mult(orbitRotationM,persp);
+	//
+	// cubematrixTemp=mult(cubeTempProj,cubeTempView);
+
+	// cubematrixTemp=mult(persp,view);
+	// cubematrixTemp=mult(orbitRotationM,cubematrixTemp);
+	// cubematrixTemp=orbitRotationM;
 
 	//cone
 	conematrixTemp=mult(coneScale,conePan);
@@ -185,6 +187,7 @@ function render() {
 	conematrixTemp=mult(view,conematrixTemp);
 	conematrixTemp=mult(persp,conematrixTemp);
 	// conematrixTemp=mult(conePan,conematrixTemp);
+	// cubematrixTemp=mat4();
 
 
 	// Converting array to workable Array because the arrays generated beforehand doesn't allow you to apply it in
@@ -197,14 +200,14 @@ function render() {
 
 	for(var i=0;i<4;i++){
 		for(var j=0;j<4;j++){
-			modelViewCube[j+(i*4)]=modelViewCubeTemp[j][i];
+			conematrix[j+(i*4)]=conematrixTemp[j][i];
 
 		}
 	}
 
 	for(var i=0;i<4;i++){
 		for(var j=0;j<4;j++){
-			conematrix[j+(i*4)]=conematrixTemp[j][i];
+			cubematrix[j+(i*4)]=cubematrixTemp[j][i];
 
 		}
 	}
@@ -219,7 +222,15 @@ function render() {
   gl.depthFunc(gl.LEQUAL);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	normalM=normalMatrix(view); //needs to be split up because this isn't working
+	// nmatrixTemp=mult(xrotationM,yrotationM);
+	// nmatrixTemp=mult(ztranslationM,matrixTemp);
+	// nmatrixTemp=mult(view,ztranslationM);
+	// nmatrixTemp=mult(view,nmatrixTemp);
+	// nmatrixTemp=mult(translationM,nmatrixTemp);
+	normalM=mult(matrixTempView,mult(translationM,mult(ztranslationM,rotationM)));
+
+	// normalM=normalMatrix(nmatrixTemp);
+	// normalM=normalMatrix(view); //needs to be split up because this isn't workingview
 	var normalMLocation= gl.getUniformLocation(program,'normalM');
 	gl.uniformMatrix4fv(normalMLocation,false,flatten(normalM));
 
@@ -236,7 +247,7 @@ function render() {
 	gl.vertexAttribPointer( vPositionCube, 3, gl.FLOAT, false, 0, 0 );
 	gl.enableVertexAttribArray( vPositionCube );
 	var matrixuniformLocationsCube= gl.getUniformLocation(program, 'matrix')
-	gl.uniformMatrix4fv(matrixuniformLocationsCube,false,modelViewCube);
+	gl.uniformMatrix4fv(matrixuniformLocationsCube,false,cubematrix);
 	gl.drawArrays(gl.LINE_STRIP, 0, cubeVertices.length );
 
 	gl.bindBuffer(gl.ARRAY_BUFFER,hBuffer);
@@ -246,6 +257,10 @@ function render() {
 	gl.uniformMatrix4fv(matrixuniformLocationsCone,false,conematrix);
 	gl.drawArrays(gl.LINE_STRIP, 0, coneVertices.length );
 
+	getLighting();
+	lightPosition=mult(cubematrixTemp,lightPositionTemp);
+	var positionUniformPositionLocation=gl.getUniformLocation(program,'lPosition');
+	gl.uniform4fv(positionUniformPositionLocation,lightPosition);
 
   window.requestAnimationFrame(render);
 
